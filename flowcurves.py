@@ -25,9 +25,9 @@ class FC:
             self.w = 0.0
         else:
             self.w = 1e3
-            n = stress.index(max(stress))
-            self.ue_strain = strain[n]
-            self.ue_stress = stress[n]
+        n = stress.index(max(stress))
+        self.ue_strain = strain[n]
+        self.ue_stress = stress[n]
         self.temp = temp
         self.rate = rate
         #print self.temp,self.rate
@@ -77,8 +77,8 @@ class FC:
     def SwiftObjFunc(self,params,xdata,ydata):
         xdata = np.array(xdata)
         ydata = np.array(ydata)
-        addition = self.w*(np.absolute(self.SwiftPrime(params,self.ue_strain)-self.Swift(params,self.ue_strain)))
-        return sum(np.absolute(self.Swift(params,xdata)-ydata))+ addition
+        addition = self.w*(np.square(self.SwiftPrime(params,self.ue_strain)-self.Swift(params,self.ue_strain)))
+        return sum(np.square(self.Swift(params,xdata)-ydata))+ addition
     def SwiftFit(self,xdata,ydata):
         cons = ({'type':'eq','fun': lambda x: self.SwiftPrime(x,self.ue_strain) - self.ue_stress},
                 )
@@ -107,8 +107,8 @@ class FC:
     def VoceObjFunc(self,params,xdata,ydata):
         xdata = np.array(xdata)
         ydata = np.array(ydata)
-        addition = self.w*(np.absolute(self.VocePrime(params,self.ue_strain)-self.Voce(params,self.ue_strain)))
-        return sum(np.absolute(self.Voce(params,xdata)-ydata))+addition
+        addition = self.w*(np.square(self.VocePrime(params,self.ue_strain)-self.Voce(params,self.ue_strain)))
+        return sum(np.square(self.Voce(params,xdata)-ydata))+addition
 
     def Gosh(self,params,xdata):
         '''stress(strain)=q*(e0+strain)**n-p'''
@@ -127,8 +127,8 @@ class FC:
     def GoshObjFunc(self,params,xdata,ydata):
         xdata = np.array(xdata)
         ydata = np.array(ydata)
-        addition = self.w*(np.absolute(self.GoshPrime(params,self.ue_strain)-self.Gosh(params,self.ue_strain))) 
-        return sum(np.absolute(self.Gosh(params,xdata)-ydata))+addition
+        addition = self.w*(np.square(self.GoshPrime(params,self.ue_strain)-self.Gosh(params,self.ue_strain))) 
+        return sum(np.square(self.Gosh(params,xdata)-ydata))+addition
     def GoshFit(self):
         bounds=[(0,1e6),(0,1e-2),(0,1),(0,1e6)]
         res = opt.differential_evolution(self.GoshObjFunc,bounds,args=(self.xdata,self.ydata))
@@ -146,8 +146,8 @@ class FC:
     def Hockett_SherbyObjFunc(self,params,xdata,ydata):
         xdata = np.array(xdata)
         ydata = np.array(ydata)
-        addition = self.w*(np.absolute(self.Hockett_SherbyPrime(params,self.ue_strain)-self.Hockett_Sherby(params,self.ue_strain)))
-        return sum(np.absolute(self.Hockett_Sherby(params,xdata)-ydata))+addition
+        addition = self.w*(np.square(self.Hockett_SherbyPrime(params,self.ue_strain)-self.Hockett_Sherby(params,self.ue_strain)))
+        return sum(np.square(self.Hockett_Sherby(params,xdata)-ydata))+addition
 
     def SwiftVoce(self,params,xdata):
         '''stress(strain) = c*Swift+(1-c)*Voce'''
@@ -161,8 +161,8 @@ class FC:
     def SwiftVoceObjFunc(self,params,xdata,ydata):
         xdata = np.array(xdata)
         ydata = np.array(ydata)
-        addition = self.w*(np.absolute(self.SwiftVocePrime(params,self.ue_strain)-self.SwiftVoce(params,self.ue_strain)))
-        return sum(np.absolute(self.SwiftVoce(params,xdata)-ydata))+addition
+        addition = self.w*(np.square(self.SwiftVocePrime(params,self.ue_strain)-self.SwiftVoce(params,self.ue_strain)))
+        return sum(np.square(self.SwiftVoce(params,xdata)-ydata))+addition
 
     def Modified_Zener_Hollomon(self,params,xdata,ydata,zdata):
         '''stress(strain,strainrate,temperature)=A*exp(Q/(R*T))*strainrate**m*
@@ -198,21 +198,26 @@ class FC:
 
 ##def main():
 ##    app = QtGui.QApplication(sys.argv)
+##    f = File('F:\pyform\pyform0\dc05_lank_l2.TRA')
 ##    f = reader.File('F:\pyform\pyform0\dc05_lank_l2.TRA')
 ##    f = File('F:\pyform\StahlRohdaten\St_WR_100_0_5_005_1.asc')
 ##    f = File('F:\pyform\Hui\St_WR_400_0_5_017.asc')
 ##    f = File('F:\pyform\Hui\data_0.asc')
-##    fc = FC(f.strainT_exp(),f.stressT_exp(),temp=f.temp_exp(),rate=f.rate_exp())
+##    fc = FC(f.strainT_exp(),f.stressT_exp(),temp=f.temp_exp(),rate=f.rate_exp(),ue=False)
 ##    res = fc.Modified_Zener_HollomonFit(f.temp_exp(),f.rate_exp(),f.strainT_exp(),f.stressT_exp())
 ##    Y = fc.values('Modified_Zener_Hollomon',res[0],f.strainT_exp())
     #ans = fc.params('Modified_Zener_Hollomon',[(-1e1,1e1),(-1e0,1e4),(-1e1,1e1),(-1e1,1e1),(-1e1,1e1),(0,1e2),(0,1e2),(0,1e4),(0,1e1)])
     #Y = fc.values('Modified_Zener_Hollomon',ans[0],f.strainT())
 ##    Y_prime = fc.SwiftPrime(ans[0],f.strainT())
 ##    pw = pg.plot()
+##    ans = fc.params('Swift',[(0,1e4),(0,1e-1),(0,1)])
+##    pw.plot(f.strainT_exp(),f.stressT_exp())
+##    pw.plot(f.strainT(),fc.Swift(ans[0],f.strainT()),pen='g')
 ##    pw.plot(f.strainT_exp(),Y,pen='r')
 ##    pw.plot(f.strainT_exp(),f.stressT_exp())
 ##    pw.plot(f.strainT(),fc.Swift(res.x,f.strainT()),pen='g')
 ##    pw.plot(f.strainT(),Y_prime)
+    
 ##    ans = fc.params('Voce',[(0,1e4),(0,1e4),(0,1e3)])
 ##    fc.values('Voce',ans[0],2e-3)
 ##    ans = fc.params('Gosh',[(0,1e4),(0,1e-2),(0,1),(0,1e4)])

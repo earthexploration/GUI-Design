@@ -271,16 +271,16 @@ class File:
         
     def Ec_find(self,Ec=2e-1):
         # Ec 0.2% elastic
-        Ec=2e-1
-        if self.strainE_exp() != None:
-            for i,j in enumerate(self.strainE_exp()):
+        Ec=2e-3
+        
+        if self.strainT_exp() != None:
+            # math.log(1+Ec)
+            for i,j in enumerate(self.strainT_exp()):
                 j = float(j)
                 if j > Ec:
                     return i
-                
-        elif self.strainT_exp != None:
-            # math.log(1+Ec)
-            for i,j in enumerate(self.strainT_exp()):
+        elif self.strainE_exp() != None:
+            for i,j in enumerate(self.strainE_exp()):
                 j = float(j)
                 if j > Ec:
                     return i

@@ -40,6 +40,7 @@ class MainWindow(QtGui.QMainWindow):
         self.model = None #model
         self.fc = None #flowcurve
         self.params = None #parameters
+        self.ue = None #uniform elongation
 
         self.yl = None #yieldloci
         self.criterion = None #yieldcriterion
@@ -107,6 +108,16 @@ class MainWindow(QtGui.QMainWindow):
         self.model = str(self.ui.comboBox_FC.currentText())
         self.ui.pushButton_FC.setToolTip(self.model)
         self.ui.pushButton_FC.setStatusTip(self.model)
+        if self.model != u'Modified_Zener_Hollomon':
+            self.xdata = None
+            self.ydata = None
+            self.zdata = self.data[self.fn].strainT()
+            self.kdata = self.data[self.fn].stressT()
+        else:
+            self.xdata = self.data[self.fn].temp_exp()
+            self.ydata = self.data[self.fn].rate_exp()
+            self.zdata = self.data[self.fn].strainT_exp()
+            self.kdata = self.data[self.fn].stressT_exp()
     def on_checkBox_Bounds_clicked(self):
         flag = self.ui.checkBox_Bounds.isChecked()
         if flag == True:
@@ -116,26 +127,31 @@ class MainWindow(QtGui.QMainWindow):
     def on_checkBox_UE_clicked(self):
         self.on_comboBox_FN_activated()
         flag = self.ui.checkBox_UE.checkState()
+        
         if flag == QtCore.Qt.Checked:
-            try:
-                self.xdata = self.data[self.fn].temp()
-                self.ydata = self.data[self.fn].rate()
-            except:
-                self.xdata = None
-                self.ydata = None
-            self.zdata = self.data[self.fn].strainT()
-            self.kdata = self.data[self.fn].stressT()
-            return True
+            self.ue = True
         if flag == QtCore.Qt.Unchecked:
-            try:
-                self.xdata = self.data[self.fn].temp_exp()
-                self.ydata = self.data[self.fn].rate_exp()
-            except:
-                self.xdata = None
-                self.ydata = None
-            self.zdata = self.data[self.fn].strainT_exp()
-            self.kdata = self.data[self.fn].stressT_exp()
-            return False
+            self.ue = False
+##        if flag == QtCore.Qt.Checked:
+##            try:
+##                self.xdata = self.data[self.fn].temp()
+##                self.ydata = self.data[self.fn].rate()
+##            except:
+##                self.xdata = None
+##                self.ydata = None
+##            self.zdata = self.data[self.fn].strainT()
+##            self.kdata = self.data[self.fn].stressT()
+##            return True
+##        if flag == QtCore.Qt.Unchecked:
+##            try:
+##                self.xdata = self.data[self.fn].temp_exp()
+##                self.ydata = self.data[self.fn].rate_exp()
+##            except:
+##                self.xdata = None
+##                self.ydata = None
+##            self.zdata = self.data[self.fn].strainT_exp()
+##            self.kdata = self.data[self.fn].stressT_exp()
+##            return False
     def on_pushButton_FC_clicked(self):
         pass
     def on_pushButton_FC_clicked_(self):
@@ -181,7 +197,7 @@ class MainWindow(QtGui.QMainWindow):
         
         models = ["Swift","Voce","Gosh","Hockett_Sherby","SwiftVoce","Modified_Zener_Hollomon"]
         if self.model != u'Modified_Zener_Hollomon':
-            fc = FC(self.zdata,self.kdata,ue=self.on_checkBox_UE_clicked)
+            fc = FC(self.zdata,self.kdata,ue=self.ue)#self.on_checkBox_UE_clicked)
             ans = fc.params(self.model,bounds[self.model])
             self.ui.label_FCErrorShow.setText(str(ans[1]))
             Y = fc.values(self.model,ans[0],self.zdata)
